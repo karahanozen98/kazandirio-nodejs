@@ -1,0 +1,32 @@
+{
+  "name": "kazandirio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "prettier":{
+    "printWidth": 140
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "@types/express-serve-static-core": "^4.17.24",
+    "@types/jsonwebtoken": "^8.5.4",
+    "@types/mongoose": "^5.11.97",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.13.6",
+    "reflect-metadata": "^0.1.13",
+    "tsyringe": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^8.2.0"
+  }
+}
