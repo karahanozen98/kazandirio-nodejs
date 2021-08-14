@@ -10,7 +10,7 @@ export interface IUser extends Document {
   tokenId?: string;
 }
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema<IUser>({
   username: { unique: true, required: true, type: String, min: 6, max: 30 },
   password: { required: true, type: String, min: 6, max: 16 },
   role: { required: true, type: String, max: 50 },

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface ICategory {
+  _id: string;
   name: string;
   rewardAmount: number;
 }

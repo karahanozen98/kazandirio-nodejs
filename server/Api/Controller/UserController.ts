@@ -1,30 +1,43 @@
-// import { Request, Response, NextFunction } from "express-serve-static-core";
-// // import { autoInjectable, injectable } from "tsyringe";
-// // import {
-// //   services,
-// //   Iservice,
-// // } from "../../Application/Services/ServiceContainer";
+import User from "../../Repository/Models/UserModel.js";
+import { Request, Response } from "express-serve-static-core";
+import asyncHandler from "express-async-handler";
+import ValidationError from "./ValidationError.js";
 
-// export default class UserController {
-//   private _services: Iservice;
+export const GetAllUsers = asyncHandler(async (req: Request, res: Response) => {
+  const result = await req.services.userService.GetAllUsers();
+  res.json(result);
+});
 
-//   constructor(services: Iservice) {
-//     this._services = services;
-//   }
+export const GetUserById = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params["id"];
+  const user = await req.services.userService.GetUserById(id);
+  res.json(user);
+});
 
-//   private AsyncWrapper(callback: Function) {
-//     return function (req: Request, res: Response, next: NextFunction) {
-//       callback(req, res, next).catch(next);
-//     };
-//   }
+export const LoginWithUsernameAndPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { username, password } = req.body;
+  var ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "0.0.0.1";
+  if (ipAddress instanceof Array) ipAddress = ipAddress[0];
 
-//   GetAllUsers = async (req: Request, res: Response) => {
-//     const users = await this._services.userService.GetAllUsers();
-//     res.send(users);
-//   };
+  if (!username || !password) throw new ValidationError();
 
-//   GetUserById = this.AsyncWrapper(async (req: Request, res: Response) => {
-//     const users = await this._services.userService.GetAllUsers();
-//     res.send(users);
-//   });
-// }
+  const user = await req.services.userService.LoginWithUsernameAndPassword(username, password, ipAddress);
+  res.json(user);
+});
+
+export const CreateUser = asyncHandler(async (req: Request, res: Response) => {
+  const { username, password, role, balance, rewards } = req.body;
+  if (!username || !password || !role || !balance || !rewards) throw new ValidationError();
+
+  const newUser = new User({ username, password, role, balance, rewards });
+  await req.services.userService.CreateUser(newUser);
+  res.json("Ok");
+});
+
+export const LoginWithToken = asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.body;
+  if (!token) throw new ValidationError();
+
+  const user = await req.services.userService.LoginWithToken(token);
+  res.json(user);
+});

@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
 
 export interface IProduct {
+  _id:string;
   name: string;
   price: number;
-  categoryId: mongoose.Schema.Types.ObjectId;
-  imageUrl: string;
+  categoryId?: string;
+  imageUrl?: string;
 }
 
-const ProductSchema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema<IProduct>({
   name: { required: true, type: String },
-  rewardAmount: { required: true, type: Number },
+  price: {required:true, type:Number},
   categoryId: { required: false, type: mongoose.Schema.Types.ObjectId, ref: "Category" },
   imageUrl: { required: false, type: String },
 });

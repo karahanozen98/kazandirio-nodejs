@@ -1,4 +1,3 @@
-
 export default interface UserDto {
   username: string;
   role: string;

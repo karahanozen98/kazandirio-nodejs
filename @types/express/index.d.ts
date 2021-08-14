@@ -1,5 +1,5 @@
-import { IDBContainer } from "../../Repository/DBContainer.js";
-import { Iservice } from "../../Application/Services/ServiceContainer.js";
+import { IDBContainer } from "../../server/Repository/DBContainer.js";
+import { Iservice } from "../../server/Application/Services/ServiceContainer.js";
 import * as express from "express";
 
 declare module "express-serve-static-core" {

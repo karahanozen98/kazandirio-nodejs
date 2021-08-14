@@ -56,6 +56,11 @@ class UserService extends Service implements IUserService {
     const user = await this._db.User.findOne({ tokenId: refreshToken._id });
     if (!user) throw new Error("Token is not assigned to any user");
 
+    const expires = new Date();
+    expires.setDate(new Date().getDate() + 30);
+
+    refreshToken.expires = expires;
+    await refreshToken.save();
     return this.ConvertUserToUserDto(user, tokenString);
   }
 
