@@ -28,9 +28,17 @@ class UserService extends Service implements IUserService {
 
   async LoginWithUsernameAndPassword(username: string, password: string, ipAddress: string): Promise<UserDto> {
     const user = await this._db.User.findOne({ username: username, password: password });
-
     if (!user) throw new Error("Wrong username or password");
 
+    // if user alreay has a token, Deactivate the old token
+    if (user.tokenId) {
+      const token = await this._db.RefreshToken.findById(user.tokenId);
+      if (token) {
+        token.active = false;
+        await token.save();
+      }
+    }
+    // Generate new token
     const token = AuthService.GenerateRefreshToken(user);
     const created = new Date();
     const expires = new Date();

@@ -8,7 +8,10 @@
     "printWidth": 140
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "",
+    "watch": "tsc -w",
+    "dev:server": "concurrently --kill-others \"npm run watch\" \"node ./ts-built/Api/app.js\""
   },
   "author": "",
   "license": "ISC",
@@ -28,6 +31,9 @@
     "tsyringe": "^4.6.0"
   },
   "devDependencies": {
-    "@types/dotenv": "^8.2.0"
+    "@types/dotenv": "^8.2.0",
+    "concurrently": "^6.2.1",
+    "nodemon": "^2.0.12",
+    "ts-node": "^10.2.0"
   }
 }

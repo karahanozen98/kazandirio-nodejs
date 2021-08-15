@@ -1,7 +1,5 @@
-import { IProduct } from "../../Repository/Models/ProductModel";
-import { IUser } from "../../Repository/Models/UserModel";
-import ProductDto from "../DTO/ProductDto";
-import Service from "./Service";
+import ProductDto from "../DTO/ProductDto.js";
+import Service from "./Service.js";
 
 interface IOrderService {
   GetUsersOrders(userId: string): Promise<ProductDto[]>;
@@ -9,7 +7,7 @@ interface IOrderService {
   CreateOrderByRewards(userId: string, productId: string): Promise<void>;
 }
 
-class OrderService extends Service {
+class OrderService extends Service implements IOrderService {
   async GetUsersOrders(userId: string): Promise<ProductDto[]> {
     const orders = await this._db.Order.find({ userId: userId });
     const productDtos = [];

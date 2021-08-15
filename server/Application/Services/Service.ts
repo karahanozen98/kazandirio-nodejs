@@ -1,5 +1,7 @@
-import { IDBContainer } from "../../Repository/DBContainer";
+import { IDBContainer } from "../../Repository/DBContainer.js";
+import { injectable } from "tsyringe";
 
+@injectable()
 class Service{
     protected _db: IDBContainer;
 
