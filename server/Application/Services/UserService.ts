@@ -42,7 +42,7 @@ class UserService extends Service implements IUserService {
     if (!createdToken) throw new Error("Token not found");
 
     user.tokenId = createdToken._id;
-    await this._db.User.findByIdAndUpdate(user._id, user);
+    await user.save();
 
     return this.ConvertUserToUserDto(user, createdToken.token);
   }
@@ -69,7 +69,7 @@ class UserService extends Service implements IUserService {
   }
 
   private ConvertUserToUserDto(user: IUser, token: string): UserDto {
-    return { username: user.username, role: user.role, balance: user.balance, rewards: user.rewards, token: token };
+    return { id: user._id, username: user.username, role: user.role, balance: user.balance, rewards: user.rewards, token: token };
   }
 }
 

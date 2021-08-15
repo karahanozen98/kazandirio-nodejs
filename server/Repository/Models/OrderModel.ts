@@ -6,20 +6,11 @@ export interface IOrder extends mongoose.Document {
   delivered: boolean;
 }
 
-export interface OrderDocument extends mongoose.Document<IOrder> {
-  userId: mongoose.Schema.Types.ObjectId;
-  productId: mongoose.Schema.Types.ObjectId;
-  delivered: boolean;
-}
-
-export const OrderSchema = new mongoose.Schema({
+export const OrderSchema = new mongoose.Schema<IOrder>({
   userId: { required: true, type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  productId: {
-    required: true,
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
-  },
+  productId: { required: true, type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+  delivered: { required: false, type: Boolean },
 });
 
-const Order = mongoose.model<OrderDocument>("Order", OrderSchema);
+const Order = mongoose.model<IOrder>("Order", OrderSchema);
 export default Order;

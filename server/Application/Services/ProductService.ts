@@ -3,9 +3,13 @@ import { IProduct } from "../../Repository/Models/ProductModel.js";
 import ProductDto from "../DTO/ProductDto.js";
 import Service from "./Service.js";
 
-interface IProductService {}
+interface IProductService {
+  GetAllProducts(): Promise<ProductDto[]>;
+  GetProductById(id: string): Promise<ProductDto>;
+  CreateProduct(product: IProduct): Promise<void>;
+}
 
-class ProductService extends Service {
+class ProductService extends Service implements IProductService {
   async GetAllProducts(): Promise<ProductDto[]> {
     const allProducts = await this._db.Product.find();
     let productDtos = [];
@@ -46,7 +50,7 @@ class ProductService extends Service {
       name: product.name,
       price: product.price,
       imageUrl: product.imageUrl,
-      category: category,
+      category: category ? { id: category._id, name: category.name, rewardAmount: category.rewardAmount } : null,
     };
   }
 }

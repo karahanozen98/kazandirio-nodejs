@@ -12,7 +12,7 @@ function Authorize(roles: string[]) {
       const options = jsonWebToken.verify(bearerToken, secret, { algorithms: ["HS256"] });
 
       if (roles.includes((<any>options).role)) next();
-      else res.status(403).json("You do not have permission");
+      else res.status(401).json("You do not have permission");
     } else {
       // Forbidden
       res.status(403).json("You are not authorized");
