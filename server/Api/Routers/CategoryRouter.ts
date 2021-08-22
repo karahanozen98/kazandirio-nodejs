@@ -6,8 +6,9 @@ import Roles from "../../Application/DTO/Roles.js";
 const router = Router();
 
 // Get all categories
-router.get("/", CategoryControler.GetAllCategories);
-router.get("/:id", CategoryControler.GetAllCategoryById);
+router.get("/", Authorize([Roles.Consumer, Roles.Admin]), CategoryControler.GetAllCategories);
+router.get("/:id", Authorize([Roles.Consumer, Roles.Admin]), CategoryControler.GetAllCategoryById);
+// create category
 router.post("/", Authorize([Roles.Admin]), CategoryControler.CreateCategory);
 
 export default router;

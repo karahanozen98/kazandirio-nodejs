@@ -5,7 +5,7 @@ import * as OrderController from "../Controller/OrderController.js";
 
 const router = Router();
 
-router.get("/myorders", Authorize([Roles.Admin, Roles.Consumer]), OrderController.GetOrdersById);
+router.post("/myorders", Authorize([Roles.Admin, Roles.Consumer]), OrderController.GetOrdersById);
 router.post("/balance", Authorize([Roles.Admin, Roles.Consumer]), OrderController.CreateOrderByBalance);
 router.post("/rewards", Authorize([Roles.Admin, Roles.Consumer]), OrderController.CreateOrderByRewards);
 

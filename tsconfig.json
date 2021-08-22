@@ -14,7 +14,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
     "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */
-  }
-  //   "include": ["src/*"],
-  //   "exclude": ["tests/*"]
+  },
+  "include": ["server"],
+  "exclude": ["**/node_modules", "**/.*/","tests/*"]
 }

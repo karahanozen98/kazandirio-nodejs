@@ -18,7 +18,7 @@ export const GetAllCategoryById = asyncHandler(async (req: Request, res: Respons
 
 export const CreateCategory = asyncHandler(async (req: Request, res: Response) => {
   const { name, rewardAmount } = req.body;
-  if (!name || !rewardAmount) throw new ValidationError();
+  if (!name || isNaN(rewardAmount)) throw new ValidationError();
   const category = new Category({ name, rewardAmount });
   await req.services.categoryService.CreateCategory(category);
 

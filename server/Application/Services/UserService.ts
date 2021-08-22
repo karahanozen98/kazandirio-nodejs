@@ -1,22 +1,31 @@
 import UserDto from "../DTO/UserDto.js";
 import { IUser } from "../../Repository/Models/UserModel.js";
-import { injectable } from "tsyringe";
 import AuthService from "./AuthService.js";
 import RefreshToken from "../../Repository/Models/RefreshTokenModel.js";
 import Service from "./Service.js";
+import Roles from "../DTO/Roles.js";
 
 interface IUserService {
-  GetAllUsers(): Promise<IUser[]>;
+  GetAllUsers(): Promise<UserDto[]>;
   GetUserById(id: string): Promise<IUser>;
   LoginWithUsernameAndPassword(username: string, password: string, ipAddress: string): Promise<UserDto>;
   LoginWithToken(tokenString: string): Promise<UserDto>;
   CreateUser(user: IUser): Promise<void>;
+  UpdateUser(id: string, role: typeof Roles, balance: number, rewards: number): Promise<void>;
 }
 
-@injectable()
 class UserService extends Service implements IUserService {
-  async GetAllUsers(): Promise<IUser[]> {
-    return await this._db.User.find();
+  async GetAllUsers(): Promise<UserDto[]> {
+    const users = await this._db.User.find();
+    let userDtoList: UserDto[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      let refreshToken = null;
+      if (user.tokenId) refreshToken = await this._db.RefreshToken.findById(user.tokenId);
+      userDtoList.push(this.ConvertUserToUserDto(user, refreshToken ? refreshToken.token : null));
+    }
+    return userDtoList;
   }
 
   async GetUserById(id: string): Promise<IUser> {
@@ -73,10 +82,30 @@ class UserService extends Service implements IUserService {
   }
 
   async CreateUser(user: IUser): Promise<void> {
+    const checkUsername = await this._db.User.find({ username: user.username });
+    if (checkUsername) throw new Error("Kullanıcı adı zaten alınmış");
     await this._db.User.create(user);
   }
 
-  private ConvertUserToUserDto(user: IUser, token: string): UserDto {
+  async UpdateUser(id: string, role: typeof Roles, balance: number, rewards: number): Promise<void> {
+    const user = await this._db.User.findById(id);
+    if (!user) throw new Error("Güncellenecek olan kullanıcı bulunamadı");
+    if (balance < 0 || rewards < 0) throw new Error("Bakiye türünden öğeler sıfırdan küçük olamaz");
+    user.role = role;
+    user.balance = balance;
+    user.rewards = rewards;
+    await user.save();
+  }
+
+  async UpdateBalance(userId:string, amount:number): Promise<void> {
+    const user = await this._db.User.findById(userId);
+    if (!user) throw new Error("Kullanıcı bulunamadı");
+    if (amount <= 0) throw new Error("Bakiye türünden öğeler sıfırdan büyük olmalu");
+    user.balance += amount;
+    await user.save();
+  }
+
+  private ConvertUserToUserDto(user: IUser, token: string | null): UserDto {
     return { id: user._id, username: user.username, role: user.role, balance: user.balance, rewards: user.rewards, token: token };
   }
 }

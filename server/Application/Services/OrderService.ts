@@ -1,10 +1,19 @@
+import UserModel, { IUser } from "../../Repository/Models/UserModel.js";
 import ProductDto from "../DTO/ProductDto.js";
 import Service from "./Service.js";
+import mongoose from "mongoose";
+
+interface OrderDto {
+  user: IUser & mongoose.Document<any, any, IUser>;
+  orderList: { userId: string; productId: string; delivered: boolean }[];
+  totalPrice: number;
+  totalReward: number;
+}
 
 interface IOrderService {
   GetUsersOrders(userId: string): Promise<ProductDto[]>;
-  CreateOrderByBalance(userId: string, productId: string): Promise<void>;
-  CreateOrderByRewards(userId: string, productId: string): Promise<void>;
+  CreateOrderByBalance(userId: string, productList: string[]): Promise<void>;
+  CreateOrderByRewards(userId: string, productList: string[]): Promise<void>;
 }
 
 class OrderService extends Service implements IOrderService {
@@ -31,44 +40,50 @@ class OrderService extends Service implements IOrderService {
     return productDtos;
   }
 
-  async CreateOrderByBalance(userId: string, productId: string): Promise<void> {
+  async ValidateOrderData(userId: string, productList: string[]): Promise<OrderDto> {
     const user = await this._db.User.findById(userId);
-    const product = await this._db.Product.findById(productId);
+    if (!user) throw new Error("Kullanıcı bulunamadı");
 
-    if (!user) throw new Error("User not found");
-    if (!product) throw new Error("Product not found");
+    const orderList = []; // all ordered products
+    let totalPrice = 0; // total price of products
+    let totalReward = 0; // total reward point which user is going to earn after buying products
 
-    const category = product.categoryId ? (await this._db.Category.findById(product.categoryId)) || null : null;
+    for (let i = 0; i < productList.length; i++) {
+      const id = productList[i];
+      const product = (await this._db.Product.findById(id)) || null;
+      if (!product) throw new Error("Ürün bulunamadı");
 
-    if (user.balance >= product.price) {
-      user.balance -= product.price;
-      if (category) user.rewards += category.rewardAmount;
-      await user.save();
-      await this._db.Order.create({ userId, productId, delivered: true });
-    } else throw new Error("Insufficent balance");
+      const category = product.categoryId ? (await this._db.Category.findById(product.categoryId)) || null : null;
+      if (category) totalReward += category.rewardAmount;
+      orderList.push({ userId: user._id, productId: product._id, delivered: true });
+      totalPrice += product.price;
+    }
+    return { user, orderList, totalPrice, totalReward };
   }
 
-  async CreateOrderByRewards(userId: string, productId: string): Promise<void> {
-    const user = await this._db.User.findById(userId);
-    const product = await this._db.Product.findById(productId);
+  async CreateOrderByBalance(userId: string, productList: string[]): Promise<void> {
+    const order = (await this.ValidateOrderData(userId, productList)) || null;
+    if (!order) throw new Error("İstenmeyen bir hata oluştu. İşlem gerçekleştirilemedi.");
 
-    if (!user) throw new Error("User not found");
-    if (!product) throw new Error("Product not found");
+    if (order.user.balance >= order.totalPrice) {
+      order.user.balance -= order.totalPrice;
+      order.user.rewards += order.totalReward;
+      await order.user.save();
+      await this._db.Order.insertMany(order.orderList);
+    } else throw new Error("Yetersiz bakiye");
+  }
 
-    const category = product.categoryId ? (await this._db.Category.findById(product.categoryId)) || null : null;
+  async CreateOrderByRewards(userId: string, productList: string[]): Promise<void> {
+    const order = (await this.ValidateOrderData(userId, productList)) || null;
+    if (!order) throw new Error("İstenmeyen bir hata oluştu. İşlem gerçekleştirilemedi.");
 
-    if (user.rewards >= product.price) {
-      user.rewards -= product.price;
-      if (category) user.rewards += category.rewardAmount;
-      await user.save();
-      await this._db.Order.create({ userId, productId, delivered: true });
-    } else if (user.balance + user.rewards >= product.price) {
-      user.balance -= product.price - user.rewards;
-      user.rewards = 0;
-      if (category) user.rewards += category.rewardAmount;
-      await user.save();
-      await this._db.Order.create({ userId, productId, delivered: true });
-    } else throw new Error("Insufficent balance");
+    if (order.user.rewards >= order.totalPrice) {
+      order.user.rewards -= order.totalPrice;
+      order.user.rewards += order.totalReward;
+      await order.user.save();
+      await this._db.Order.insertMany(order.orderList);
+    }
+    else throw new Error("Yetersiz bakiye");
   }
 }
 

@@ -7,6 +7,8 @@ interface IProductService {
   GetAllProducts(): Promise<ProductDto[]>;
   GetProductById(id: string): Promise<ProductDto>;
   CreateProduct(product: IProduct): Promise<void>;
+  UpdateProduct(id: string, name: string, price: number, categoryId: string, imageUrl: string): Promise<void>;
+  DeleteProduct(productId: string): Promise<void>
 }
 
 class ProductService extends Service implements IProductService {
@@ -41,7 +43,24 @@ class ProductService extends Service implements IProductService {
       const checkCategory = await this._db.Category.findById(product.categoryId);
       if (!checkCategory) throw new Error("Unknown category type");
     }
-    this._db.Product.create(product);
+    await this._db.Product.create(product);
+  }
+
+  async UpdateProduct(id: string, name: string, price: number, categoryId: string, imageUrl: string): Promise<void> {
+    const product = await this._db.Product.findById(id);
+    if (!product) throw new Error("Güncellenecek ürün bulunamadı");
+    if (price <= 0) throw new Error("Fiyat bilgisi sıfırdan küçük veya eşit olamaz");
+    product.name = name;
+    product.price = price;
+    //product.categoryId = categoryId;
+    product.imageUrl = imageUrl;
+    await product.save();
+  }
+
+  async DeleteProduct(productId: string): Promise<void> {
+    const product = await this._db.Product.findById(productId);
+    if (!product) throw new Error("Ürün bulunamadı");
+    await product.remove();
   }
 
   private ConvertProductToProductDto(product: IProduct, category: ICategory | null): ProductDto {
